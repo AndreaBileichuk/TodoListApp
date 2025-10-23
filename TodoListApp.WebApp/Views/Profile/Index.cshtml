@@ -45,34 +45,38 @@
             <div class="card border-light shadow-sm p-4 profile-card mb-4">
                 <div class="card-body">
                     <h5 class="card-title mb-3">Змінити ім'я користувача</h5>
-                    <form asp-action="UpdateUserName" method="post">
+                    @*<form asp-action="UpdateUserName" method="post">
                         $1$ Placeholder action #1#
                         <div class="mb-3">
+                            <label asp-for="NewUserName" class="form-label">Нове ім'я користувача</label>
                             <input asp-for="NewUserName" class="form-control" placeholder="Введіть нове ім'я"/>
                             <span asp-validation-for="NewUserName" class="text-danger small"></span>
                         </div>
                         <button type="submit" class="btn btn-primary">Зберегти ім'я</button>
-                    </form>
+                    </form>*@
                 </div>
             </div>
 
             <div class="card border-light shadow-sm p-4 profile-card">
                 <div class="card-body">
                     <h5 class="card-title mb-3">Змінити пароль</h5>
-                    <form asp-action="ChangePassword" method="post">
+                    @*<form asp-action="ChangePassword" method="post">
                         $1$ Placeholder action #1#
                         <div class="mb-3">
+                            <label asp-for="OldPassword" class="form-label">Старий пароль</label>
                             <input asp-for="OldPassword" type="password" class="form-control" placeholder="Введіть поточний пароль"/>
                             <span asp-validation-for="OldPassword" class="text-danger small"></span>
                         </div>
                         <div class="mb-3">
+                            <label asp-for="NewPassword" class="form-label">Новий пароль</label>
                             <input asp-for="NewPassword" type="password" class="form-control" placeholder="Введіть новий пароль"/>
                             <span asp-validation-for="NewPassword" class="text-danger small"></span>
                         </div>
                         <button type="submit" class="btn btn-primary">Змінити пароль</button>
-                    </form>
+                    </form>*@
                 </div>
             </div>
+
         </div>
     </div>
 </div>
