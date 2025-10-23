@@ -15,13 +15,11 @@
                         <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]"/>
 
                         <div class="mb-3">
-                            <label asp-for="Email" class="form-label">Email</label>
                             <input asp-for="Email" class="form-control" placeholder="Введіть ваш email"/>
                             <span asp-validation-for="Email" class="text-danger small"></span>
                         </div>
 
                         <div class="mb-4">
-                            <label asp-for="Password" class="form-label">Пароль</label>
                             <div class="input-group">
                                 <input asp-for="Password" type="password" class="form-control" placeholder="Введіть ваш пароль" id="password-field"/>
                                 <button class="btn btn-outline-secondary" type="button" id="toggle-password">
