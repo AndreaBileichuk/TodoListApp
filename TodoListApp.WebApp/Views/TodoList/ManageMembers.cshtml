@@ -1,5 +1,4 @@
 ﻿@model TodoListApp.WebApp.Models.TodoList.TodoListDetailsModel
-@using TodoListApp.WebApp.Enums
 @using System.Security.Claims
 @using TodoListApp.WebApp.Helpers
 
@@ -7,6 +6,17 @@
     ViewData["Title"] = $"Керування учасниками: {Model.Title}";
     Layout = "_Layout";
     var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+}
+@{
+    int count = Model.Members.Count;
+    string word;
+
+    if (count == 1)
+        word = "учасник";
+    else if (count > 1 && count < 5)
+        word = "учасники";
+    else
+        word = "учасників";
 }
 
 <style>
@@ -34,9 +44,7 @@
         <div class="col-md-6">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4 class="fw-light mb-0">Поточні учасники</h4>
-                <span class="badge bg-secondary rounded-pill">
-                @Model.Members.Count @(Model.Members.Count == 1 ? "учасник" : (Model.Members.Count > 1 && Model.Members.Count < 5) ? "учасники" : "учасників")
-            </span>
+                <span class="badge bg-secondary rounded-pill">@word</span>
             </div>
             <div class="list-group">
                 @foreach (var member in Model.Members)
@@ -83,10 +91,10 @@
 
             <div class="card mb-4">
                 <div class="card-body">
-                        <label for="emailToAdd" class="form-label">Пошук за Email</label>
-                        <div class="input-group">
-                            <input type="email" id="emailToAdd" name="emailToAdd" class="form-control" placeholder="Введіть email користувача" required />
-                        </div>
+                    <label for="emailToAdd" class="form-label">Пошук за Email</label>
+                    <div class="input-group">
+                        <input type="email" id="emailToAdd" name="emailToAdd" class="form-control" placeholder="Введіть email користувача" required/>
+                    </div>
                 </div>
             </div>
 
@@ -102,7 +110,7 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
