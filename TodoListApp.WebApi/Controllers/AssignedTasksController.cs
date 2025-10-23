@@ -1,14 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TodoListApp.WebApi.Data.Enums;
 using TodoListApp.WebApi.Mappers;
-using TodoListApp.WebApi.Models;
+using TodoListApp.WebApi.Models.TodoTaskDtos;
 using TodoListApp.WebApi.Services.Interfaces;
 
 namespace TodoListApp.WebApi.Controllers;
 
-[ApiController]
-[Route("api/[controller]/{userId}")]
-public class AssignedTasksController : ControllerBase
+public class AssignedTasksController : BaseApiController
 {
     private readonly IAssignedTasksDatabaseService _service;
 
@@ -18,20 +16,19 @@ public class AssignedTasksController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<TodoTaskDto>>> GetAssignedTasks(
-        int userId,
+    public async Task<ActionResult<List<TodoTaskDetailsDto>>> GetAssignedTasks(
         [FromQuery]TodoTaskStatus? status = null,
         [FromQuery]string? sortBy = null,
         [FromQuery]string? sortDirection = null)
     {
-        var assignedTasks = await this._service.GetAssignedTasksAsync(userId, status, sortBy, sortDirection);
-        return this.Ok(assignedTasks.Select(TodoMappers.MapTodoTask).ToList());
+        var assignedTasks = await this._service.GetAssignedTasksAsync(this.UserId, status, sortBy, sortDirection);
+        return this.Ok(assignedTasks.Select(TodoMappers.MapTodoTaskToAssigned));
     }
 
-    [HttpPatch("tasks/{taskId}")]
-    public async Task<ActionResult> UpdateAssignedTaskStatus(int userId, int taskId, [FromBody] UpdateTaskStatusDto status)
+    [HttpPatch("{taskId}")]
+    public async Task<ActionResult> UpdateAssignedTaskStatus(int taskId, [FromBody] UpdateTaskStatusDto status)
     {
-        var result = await this._service.UpdateAssignedTaskStatusAsync(userId, taskId, status.TodoTaskStatus);
+        var result = await this._service.UpdateAssignedTaskStatusAsync(this.UserId, taskId, status.TodoTaskStatus);
 
         if (!result)
         {

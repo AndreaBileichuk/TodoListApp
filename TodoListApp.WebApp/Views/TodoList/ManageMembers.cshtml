@@ -1,0 +1,171 @@
+﻿@model TodoListApp.WebApp.Models.TodoList.TodoListDetailsModel
+@using TodoListApp.WebApp.Enums
+@using System.Security.Claims
+@using TodoListApp.WebApp.Helpers
+
+@{
+    ViewData["Title"] = $"Керування учасниками: {Model.Title}";
+    Layout = "_Layout";
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+}
+
+<style>
+    .member-avatar {
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+    }
+    .search-results-container {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-light">@ViewData["Title"]</h2>
+        <a asp-action="Details" asp-route-todoListId="@Model.Id" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Назад до списку
+        </a>
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-md-6">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-light mb-0">Поточні учасники</h4>
+                <span class="badge bg-secondary rounded-pill">
+                @Model.Members.Count @(Model.Members.Count == 1 ? "учасник" : (Model.Members.Count > 1 && Model.Members.Count < 5) ? "учасники" : "учасників")
+            </span>
+            </div>
+            <div class="list-group">
+                @foreach (var member in Model.Members)
+                {
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            @{
+                                var avatarUrl = member.AvatarUrl ?? DefaultAvatars.DefaultAvatar;
+                            }
+                            <img src="@avatarUrl" class="rounded-circle me-3 member-avatar" alt="Avatar">
+                            <div>
+                                <h6 class="mb-0">@member.UserName</h6>
+                                <small class="text-muted">@member.Role.ToString()</small>
+                            </div>
+                        </div>
+
+                        @if (member.UserId != currentUserId)
+                        {
+                            <form asp-action="RemoveMember"
+                                  asp-route-todoListId="@Model.Id"
+                                  asp-route-memberIdToRemove="@member.UserId"
+                                  method="post"
+                                  onsubmit="return confirm('Ви впевнені, що хочете видалити цього учасника?');">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Видалити учасника">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        }
+                    </div>
+                }
+
+                @if (Model.Members.Count <= 1)
+                {
+                    <div class="list-group-item text-muted text-center">
+                        Інших учасників поки що немає.
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <h4 class="fw-light mb-3">Додати учасника</h4>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                        <label for="emailToAdd" class="form-label">Пошук за Email</label>
+                        <div class="input-group">
+                            <input type="email" id="emailToAdd" name="emailToAdd" class="form-control" placeholder="Введіть email користувача" required />
+                        </div>
+                </div>
+            </div>
+
+            <h5 class="fw-light mb-2">Результати пошуку</h5>
+            <div id="search-results" class="search-results-container list-group">
+                <div class="list-group-item text-muted text-center">
+                    Введіть email для пошуку користувача.
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('emailToAdd');
+            const resultsContainer = document.getElementById('search-results');
+            const todoListId = @Model.Id;
+
+            const initialResultsHtml = resultsContainer.innerHTML;
+            let searchTimeout;
+
+            searchInput.addEventListener('input', function () {
+                const query = searchInput.value.trim();
+
+                clearTimeout(searchTimeout);
+
+                searchTimeout = setTimeout(async () => {
+                    resultsContainer.innerHTML = '<div class="list-group-item text-muted text-center">Шукаємо...</div>';
+
+                    try {
+                        const url = `/TodoList/${todoListId}/manage-members/search-users?query=${encodeURIComponent(query)}`;
+                        const response = await fetch(url);
+
+                        if (!response.ok) {
+                            throw new Error('Помилка мережі під час пошуку');
+                        }
+
+                        const users = await response.json();
+
+                        resultsContainer.innerHTML = '';
+
+                        if (users.length === 0) {
+                            resultsContainer.innerHTML = '<div class="list-group-item text-muted text-center">Користувачів не знайдено.</div>';
+                        } else {
+                            users.forEach(user => {
+                                const avatarUrl = user.avatarUrl || '@DefaultAvatars.DefaultAvatar';
+
+                                const userHtml = `
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            <img src="${avatarUrl}" class="rounded-circle me-3 member-avatar" alt="Avatar">
+                                            <div>
+                                                <h6 class="mb-0">${user.userName}</h6>
+                                                <small class="text-muted">${user.email}</small>
+                                            </div>
+                                        </div>
+
+                                        <form action="/TodoList/${todoListId}/manage-members/add" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="emailToAdd" value="${user.email}" />
+                                            <button type="submit" class="btn btn-sm btn-success add-found-user-btn">
+                                                <i class="bi bi-plus-lg"></i> Додати
+                                            </button>
+                                        </form>
+                                    </div>`;
+                                resultsContainer.insertAdjacentHTML('beforeend', userHtml);
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Помилка пошуку:', error);
+                        resultsContainer.innerHTML = '<div class="list-group-item text-danger text-center">Помилка під час пошуку. Спробуйте ще раз.</div>';
+                    }
+                }, 300);
+            });
+        });
+    </script>
+}

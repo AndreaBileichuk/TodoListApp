@@ -1,0 +1,29 @@
+﻿@model TodoListApp.WebApp.Models.TodoList.EditTodoListModel
+
+<form asp-controller="TodoList"
+      asp-action="Edit"
+      asp-route-todoListId="@ViewData["todoListId"]"
+      id="editTodoListForm" method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="mb-3">
+        <label for="Title" class="form-label">Title</label>
+        <input id="Title" asp-for="Title" class="form-control" placeholder="Enter title" />
+        <span asp-validation-for="Title" class="text-danger small"></span>
+    </div>
+
+    <div class="mb-3">
+        <label for="Description" class="form-label">Description</label>
+        <textarea id="Description" asp-for="Description" class="form-control" rows="3" placeholder="Enter description (optional)"></textarea>
+        <span asp-validation-for="Description" class="text-danger small"></span>
+    </div>
+
+    <div class="d-flex justify-content-between border-top pt-3 mt-3">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            Close
+        </button>
+        <button type="submit" class="btn btn-primary">
+            Save Changes
+        </button>
+    </div>
+</form>

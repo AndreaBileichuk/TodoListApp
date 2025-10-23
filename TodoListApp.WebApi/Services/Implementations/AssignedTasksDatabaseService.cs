@@ -2,20 +2,21 @@
 using TodoListApp.WebApi.Data;
 using TodoListApp.WebApi.Data.Entities;
 using TodoListApp.WebApi.Data.Enums;
+using TodoListApp.WebApi.Models.TodoTaskDtos;
 using TodoListApp.WebApi.Services.Interfaces;
 
 namespace TodoListApp.WebApi.Services.Implementations;
 
 public class AssignedTasksDatabaseService : IAssignedTasksDatabaseService
 {
-    private readonly TodoListDbContext _context;
+    private readonly ApplicationDbContext _context;
 
-    public AssignedTasksDatabaseService(TodoListDbContext context)
+    public AssignedTasksDatabaseService(ApplicationDbContext context)
     {
         this._context = context;
     }
 
-    public async Task<List<TodoTask>> GetAssignedTasksAsync(int userId, TodoTaskStatus? status = null, string? sortBy = null, string? sortDirection = null)
+    public async Task<List<TodoTask>> GetAssignedTasksAsync(string userId, TodoTaskStatus? status = null, string? sortBy = null, string? sortDirection = null)
     {
         var query = this._context.TodoTasks.Where(t => t.AssigneeId == userId);
 
@@ -39,7 +40,7 @@ public class AssignedTasksDatabaseService : IAssignedTasksDatabaseService
         return await query.ToListAsync();
     }
 
-    public async Task<bool> UpdateAssignedTaskStatusAsync(int userId, int taskId, TodoTaskStatus status)
+    public async Task<bool> UpdateAssignedTaskStatusAsync(string userId, int taskId, TodoTaskStatus status)
     {
         var todoTask = await this._context.TodoTasks.FindAsync(taskId);
 
@@ -50,6 +51,31 @@ public class AssignedTasksDatabaseService : IAssignedTasksDatabaseService
 
         todoTask.Status = status;
 
+        await this._context.SaveChangesAsync();
+
+        return true;
+    }
+
+    public async Task<bool> AssignTaskToUser(string listCreatorId, int taskId, string assigneeId)
+    {
+        var todoTask = await this._context.TodoTasks
+            .FirstOrDefaultAsync(t => t.Id == taskId &&
+                                      t.TodoList!.Members.Any(m => m.UserId == listCreatorId && m.Role == ListRole.Owner));
+
+        if (todoTask is null)
+        {
+            return false;
+        }
+
+        var assigneeIsMember = await this._context.TodoListMembers
+            .AnyAsync(m => m.TodoListId == todoTask.TodoListId && m.UserId == assigneeId);
+
+        if (!assigneeIsMember)
+        {
+            return false;
+        }
+
+        todoTask.AssigneeId = assigneeId;
         await this._context.SaveChangesAsync();
 
         return true;

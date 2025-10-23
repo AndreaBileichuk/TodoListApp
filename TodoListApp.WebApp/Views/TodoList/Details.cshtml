@@ -1,0 +1,432 @@
+﻿@model TodoListApp.WebApp.Models.TodoList.TodoListDetailsModel
+@using TodoListApp.WebApp.Enums
+@using System.Security.Claims
+@using TodoListApp.WebApp.Helpers
+
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = Model.Title;
+}
+
+<style>
+    .card-accent-warning { border-left: 4px solid var(--bs-warning); }
+    .card-accent-secondary { border-left: 4px solid var(--bs-secondary); }
+    .card-accent-primary { border-left: 4px solid var(--bs-primary); }
+    .card-accent-success { border-left: 4px solid var(--bs-success); }
+
+    .text-color-warning { color: var(--bs-warning); }
+    .text-color-secondary { color: var(--bs-secondary); }
+    .text-color-primary { color: var(--bs-primary); }
+    .text-color-success { color: var(--bs-success); }
+
+    .member-avatar {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border: 3px solid white;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .header-section {
+        background: linear-gradient(135deg, #2d3436 0%, #1e272e 100%);
+        color: white;
+        border-radius: 12px;
+        padding: 35px 40px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        border: 1px solid #3a3a3a;
+    }
+
+    .header-section h1 {
+        font-weight: 300;
+        letter-spacing: -0.5px;
+    }
+
+    .header-section p {
+        font-size: 0.95rem;
+        font-weight: 300;
+        line-height: 1.6;
+    }
+
+    .members-section {
+        background-color: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .members-scroll {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        align-items: center;
+    }
+
+    .member-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        max-width: 70px;
+    }
+
+    .member-name {
+        font-size: 0.85rem;
+        margin-top: 8px;
+        word-break: break-word;
+        max-width: 100%;
+        font-weight: 500;
+    }
+
+    .comments-section {
+        background-color: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .comment-item {
+        border-bottom: 1px solid #f0f0f0;
+        padding: 15px 0;
+    }
+
+    .comment-item:last-child {
+        border-bottom: none;
+    }
+
+    .comment-avatar {
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+    }
+
+    .comment-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+    }
+
+    .comment-author {
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    .comment-time {
+        font-size: 0.8rem;
+        color: #999;
+    }
+
+    .comment-text {
+        color: #555;
+        line-height: 1.6;
+        margin-left: 50px;
+    }
+
+    .action-panel {
+        background-color: #f8f9fa;
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 25px;
+        margin-top: 30px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: #333;
+    }
+
+    .task-grid {
+        margin-bottom: 30px;
+    }
+</style>
+
+<div class="container mb-5">
+    <!-- Заголовок та опис списку -->
+    <div class="header-section">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+            <div class="flex-grow-1">
+                <h1 class="mb-3">@Model.Title</h1>
+                <p class="mb-0 opacity-75" style="max-width: 800px;">
+                    @if (!string.IsNullOrEmpty(Model.Description))
+                    {
+                        @Model.Description
+                    }
+                    else
+                    {
+                        <span>Ще немає опису.</span>
+                    }
+                </p>
+            </div>
+
+            @if (Model.CurrentUserRole == ListRole.Owner)
+            {
+                <div class="ms-4">
+                    <a asp-action="Create"
+                       asp-controller="TodoTask"
+                       asp-route-todoListId="@Model.Id"
+                       class="btn btn-outline-light add-task-btn">
+                        <i class="bi bi-plus-circle me-1"></i> Додати Завдання
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Учасники списку -->
+    <div class="members-section">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="section-title mb-0">
+                <i class="bi bi-people-fill me-2"></i>Учасники списку
+            </h5>
+            @if (Model.CurrentUserRole == ListRole.Owner)
+            {
+                <a asp-action="ManageMembers"
+                   asp-controller="TodoList"
+                   asp-route-todoListId="@Model.Id"
+                   class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-person-plus"></i> Керувати
+                </a>
+            }
+        </div>
+
+        <div class="members-scroll">
+            @{
+                var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            }
+
+            @foreach (var member in Model.Members)
+            {
+                <div class="member-item">
+                    @{
+                        var avatarUrl = member.AvatarUrl ?? DefaultAvatars.DefaultAvatar;
+                    }
+                    <img src="@avatarUrl" class="rounded-circle member-avatar" alt="Avatar">
+                    <div class="member-name">
+                        @if (member.UserId == currentUserId)
+                        {
+                            <span class="text-primary">Ви</span>
+                        }
+                        else
+                        {
+                            @member.UserName
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Завдання -->
+    @if (Model.Tasks.Any())
+    {
+        <div class="task-grid">
+            <h5 class="section-title mb-4">
+                <i class="bi bi-list-check me-2"></i>Завдання
+            </h5>
+            <div class="row g-4">
+                @foreach (var task in Model.Tasks)
+                {
+                    string statusText;
+                    string badgeClass;
+                    string cardAccentClass;
+
+                    if (task.IsOverdue)
+                    {
+                        statusText = "Протерміновано";
+                        badgeClass = "text-color-warning";
+                        cardAccentClass = "card-accent-warning";
+                    }
+                    else
+                    {
+                        switch (task.Status)
+                        {
+                            case TodoTaskStatus.NotStarted:
+                                statusText = "Не розпочато";
+                                badgeClass = "text-color-secondary";
+                                cardAccentClass = "card-accent-secondary";
+                                break;
+                            case TodoTaskStatus.InProgress:
+                                statusText = "В процесі";
+                                badgeClass = "text-color-primary";
+                                cardAccentClass = "card-accent-primary";
+                                break;
+                            case TodoTaskStatus.Completed:
+                                statusText = "Завершено";
+                                badgeClass = "text-color-success";
+                                cardAccentClass = "card-accent-success";
+                                break;
+                            default:
+                                statusText = "Невідомо";
+                                badgeClass = "text-bg-dark";
+                                cardAccentClass = "";
+                                break;
+                        }
+                    }
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 shadow-sm @cardAccentClass">
+                            <div class="card-body d-flex flex-column">
+                                <div class="flex-grow-1">
+                                    <h5 class="card-title">@task.Title</h5>
+                                    <span class="@badgeClass fw-semibold">@statusText</span>
+                                </div>
+                                <div class="d-flex gap-2 justify-content-end mt-4">
+                                    @if (Model.CurrentUserRole == ListRole.Owner || task.AssigneeId == currentUserId)
+                                    {
+                                        <a asp-controller="TodoTask"
+                                           asp-action="Edit"
+                                           asp-route-todoListId="@Model.Id"
+                                           asp-route-todoTaskId="@task.Id"
+                                           class="btn btn-sm btn-outline-primary edit-task-btn">
+                                            <i class="bi bi-pencil"></i> Редагувати
+                                        </a>
+                                    }
+
+                                    @if (Model.CurrentUserRole == ListRole.Owner)
+                                    {
+                                        <a asp-action="Delete"
+                                           asp-controller="TodoTask"
+                                           asp-route-todoListId="@Model.Id"
+                                           asp-route-todoTaskId="@task.Id"
+                                           class="btn btn-sm btn-outline-danger delete-task-btn">
+                                            <i class="bi bi-trash"></i> Видалити
+                                        </a>
+
+                                        <a asp-action="Assign"
+                                           asp-controller="TodoTask"
+                                           asp-route-todoListId="@Model.Id"
+                                           asp-route-todoTaskId="@task.Id"
+                                           class="btn btn-sm btn-outline-success assign-task-btn">
+                                            <i class="bi bi-person-plus-fill"></i> Призначити @* або bi-person-check-fill *@
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center p-5 rounded" style="background-color: #f8f9fa; border: 2px dashed #dee2e6;">
+            <i class="bi bi-check-circle" style="font-size: 3rem; color: #6c757d;"></i>
+            <h4 class="fw-light mt-3">Ви все встигли!</h4>
+            <p class="text-muted">Завдань не знайдено. Спробуйте додати нове.</p>
+        </div>
+    }
+
+    <!-- Коментарі -->
+    <div class="comments-section mt-4">
+
+        <div class="comments-header d-flex justify-content-between align-items-center"
+             data-bs-toggle="collapse"
+             data-bs-target="#collapseComments"
+             aria-expanded="false"
+             aria-controls="collapseComments">
+
+            <h5 class="section-title mb-0">
+                <i class="bi bi-chat-dots-fill me-2"></i>Коментарі
+                <span class="badge bg-secondary ms-2" id="comment-count-badge">?</span>
+            </h5>
+            <i class="bi bi-chevron-down toggle-icon"></i>
+        </div>
+
+        <div class="collapse"
+             id="collapseComments"
+             data-list-id="@Model.Id"
+             data-get-comments-url="@Url.Action("GetComments", "TodoList", new { todoListId = Model.Id })"
+             data-add-comment-url="@Url.Action("AddComment", "TodoList", new { todoListId = Model.Id })">
+
+            <div class="comments-body">
+                <div class="text-center text-muted p-3" id="comments-placeholder">
+                    Розгорніть, щоб завантажити коментарі...
+                </div>
+            </div>
+
+            <div class="add-comment-form">
+                <form asp-controller="TodoList"
+                      asp-action="AddComment"
+                      asp-route-todoListId="@Model.Id"
+                      method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="d-flex gap-3">
+                        @{
+                            var currentUserAvatar = User.FindFirstValue("AvatarUrl") ?? DefaultAvatars.DefaultAvatar;
+                        }
+                        <img src="@currentUserAvatar" class="rounded-circle comment-avatar align-self-start" alt="Ваш аватар">
+                        <div class="flex-grow-1">
+                            <textarea name="commentText" class="form-control form-control-sm mb-2" rows="2" placeholder="Додати коментар..." required></textarea>
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-send"></i> Надіслати
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Панель керування для власника -->
+    @if (Model.CurrentUserRole == ListRole.Owner)
+    {
+        <div class="action-panel">
+            <h5 class="section-title mb-3">
+                <i class="bi bi-gear-fill me-2"></i>Керування списком
+            </h5>
+            <div class="d-flex gap-2 flex-wrap">
+                <a asp-action="Edit"
+                   asp-controller="TodoList"
+                   asp-route-todoListId="@Model.Id"
+                   class="btn btn-outline-primary edit-todo-list-btn">
+                    <i class="bi bi-pencil-square"></i> Редагувати цей список
+                </a>
+                <a asp-action="Delete"
+                   asp-controller="TodoList"
+                   asp-route-todoListId="@Model.Id"
+                   class="btn btn-outline-danger delete-todo-list-btn">
+                    <i class="bi bi-trash"></i> Видалити цей список
+                </a>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Модальне вікно для завдань -->
+<div class="modal fade" id="taskModal" tabindex="-1" aria-labelledby="taskModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="taskModalLabel">Edit Task</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальне вікно для списку -->
+<div class="modal fade" id="todoListModal" tabindex="-1" aria-labelledby="todoListModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title" id="todoListModalLabel">Edit Todo List</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+            </div>
+        </div>
+    </div>
+</div>

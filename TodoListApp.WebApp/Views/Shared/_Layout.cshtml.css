@@ -1,6 +1,18 @@
 ﻿/* Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
 for details on configuring this project to bundle and minify static web assets. */
 
+body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.navbar-nav .nav-link:hover {
+    color: #0d6efd;
+}
+
+footer {
+    font-size: 0.9rem;
+}
+
 a.navbar-brand {
   white-space: normal;
   text-align: center;

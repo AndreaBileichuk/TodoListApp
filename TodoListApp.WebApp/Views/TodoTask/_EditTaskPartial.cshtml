@@ -1,0 +1,69 @@
+﻿@model TodoListApp.WebApp.Models.TodoTask.EditTodoTaskModel
+
+<form asp-controller="TodoTask"
+      asp-action="Edit"
+      asp-route-todoListId="@ViewData["todoListId"]"
+      asp-route-todoTaskId="@Model.Id"
+      id="editTaskForm" method="post">
+    @Html.AntiForgeryToken()
+
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="CreatedAt" />
+    <input type="hidden" asp-for="IsOverdue" />
+
+    <div class="mb-3">
+        <label for="Title" class="form-label fw-semibold">
+            <i class="bi bi-card-text me-1"></i>Task Title
+        </label>
+        <input id="Title" asp-for="Title" class="form-control" placeholder="Enter task title" />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label for="Description" class="form-label fw-semibold">
+            <i class="bi bi-file-text me-1"></i>Description
+        </label>
+        <textarea id="Description" asp-for="Description" class="form-control" rows="4" placeholder="Enter task description (optional)"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="Status" class="form-label fw-semibold">
+                <i class="bi bi-flag me-1"></i>Status
+            </label>
+            <select id="Status" asp-for="Status" asp-items="Html.GetEnumSelectList<TodoListApp.WebApp.Enums.TodoTaskStatus>()" class="form-select"></select>
+            <span asp-validation-for="Status" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <label for="DueDate" class="form-label fw-semibold">
+                <i class="bi bi-calendar-event me-1"></i>Due Date
+            </label>
+            <input id="DueDate" asp-for="DueDate" type="datetime-local" class="form-control" />
+            <span asp-validation-for="DueDate" class="text-danger"></span>
+        </div>
+    </div>
+
+    @if (Model.IsOverdue)
+    {
+    <div class="alert alert-warning d-flex align-items-center mb-3" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <div>This task is overdue!</div>
+    </div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center border-top pt-3 mt-3">
+        <small class="text-muted">
+            <i class="bi bi-clock-history me-1"></i>Created: @Model.CreatedAt.ToString("MMM dd, yyyy h:mm tt")
+        </small>
+        <div>
+            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">
+                <i class="bi bi-x-circle me-1"></i>Close
+            </button>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-circle me-1"></i>Save Changes
+            </button>
+        </div>
+    </div>
+</form>

@@ -1,0 +1,58 @@
+﻿@model TodoListApp.WebApp.Models.LoginUserModel
+@{
+ViewData["Title"] = "Вхід";
+Layout = "_Layout";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-light shadow-sm p-4">
+                <div class="card-body">
+                    <h2 class="text-center mb-3">Вхід</h2>
+
+                    <form asp-action="Login" method="post">
+                        <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]"/>
+
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label">Email</label>
+                            <input asp-for="Email" class="form-control" placeholder="Введіть ваш email"/>
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Password" class="form-label">Пароль</label>
+                            <div class="input-group">
+                                <input asp-for="Password" type="password" class="form-control" placeholder="Введіть ваш пароль" id="password-field"/>
+                                <button class="btn btn-outline-secondary" type="button" id="toggle-password">
+                                    <i class="bi bi-eye-slash" id="toggle-password-icon"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+
+                        <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-primary">Увійти</button>
+                        </div>
+
+                        <div class="text-center">
+                            <p class="text-muted small">
+                                Не маєте акаунту?
+                                <a asp-controller="Auth" asp-action="Register" class="text-decoration-none">
+                                    Зареєструватися
+                                </a>
+                            </p>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial"/>
+}

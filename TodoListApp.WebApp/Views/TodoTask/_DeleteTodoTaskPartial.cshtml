@@ -1,0 +1,27 @@
+﻿@model TodoListApp.WebApp.Models.TodoTask.TodoTaskDetailsModel
+
+<form asp-controller="TodoTask"
+      asp-action="DeleteConfirmed"
+      asp-route-todoListId="@ViewData["todoListId"]"
+      asp-route-todoTaskId="@Model.Id"
+      id="deleteTodoTaskForm"
+      method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="alert alert-danger d-flex align-items-center" role="alert">
+        <i class="bi bi-exclamation-triangle-fill flex-shrink-0 me-3 fs-4" aria-hidden="true"></i>
+        <div>
+            Are you sure you want to permanently delete the task <strong class="fw-bold">"@Model.Title"</strong>?
+            <div class="mt-2">This action cannot be undone.</div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end border-top pt-3 mt-3">
+        <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle me-1"></i>Cancel
+        </button>
+        <button type="submit" class="btn btn-danger">
+            <i class="bi bi-trash-fill me-1"></i>Delete
+        </button>
+    </div>
+</form>

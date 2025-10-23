@@ -13,8 +13,7 @@ public class TodoTaskConfiguration : IEntityTypeConfiguration<TodoTask>
 
         builder.HasKey(t => t.Id);
 
-        builder.Property(t => t.Id)
-            .HasColumnName("t_id");
+        builder.Property(t => t.Id).HasColumnName("t_id");
 
         builder.Property(t => t.Title)
             .IsRequired()
@@ -32,7 +31,7 @@ public class TodoTaskConfiguration : IEntityTypeConfiguration<TodoTask>
 
         builder.Property(t => t.CreatedAt)
             .HasDefaultValueSql("now() at time zone 'utc'")
-            .HasColumnName("t_create_at");
+            .HasColumnName("t_created_at");
 
         builder.Property(t => t.DueDate)
             .IsRequired()
@@ -40,7 +39,11 @@ public class TodoTaskConfiguration : IEntityTypeConfiguration<TodoTask>
 
         builder.Property(t => t.AssigneeId)
             .IsRequired()
-            .HasColumnName("u_id");
+            .HasColumnName("u_assignee_id");
+
+        builder.Property(t => t.CreatedById)
+            .IsRequired()
+            .HasColumnName("u_creator_id");
 
         builder.Property(t => t.TodoListId)
             .IsRequired()
@@ -49,5 +52,15 @@ public class TodoTaskConfiguration : IEntityTypeConfiguration<TodoTask>
         builder.HasOne(t => t.TodoList)
             .WithMany(tl => tl.TodoTasks)
             .HasForeignKey(t => t.TodoListId);
+
+        builder.HasOne(t => t.Assignee)
+            .WithMany(u => u.AssignedTasks)
+            .HasForeignKey(t => t.AssigneeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(t => t.CreatedBy)
+            .WithMany(u => u.CreatedTasks)
+            .HasForeignKey(t => t.CreatedById)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

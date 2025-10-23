@@ -1,0 +1,255 @@
+﻿@model List<TodoListApp.WebApp.Models.TodoTask.AssignedTaskModel>
+@using TodoListApp.WebApp.Enums
+
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Мої призначені завдання";
+
+    var currentSortBy = ViewData["CurrentSortBy"] as string;
+    var currentSortDirection = ViewData["CurrentSortDirection"] as string ?? "asc";
+    var currentStatus = ViewData["CurrentStatus"] as string;
+}
+
+<style>
+    /* Ті ж стилі, що й для карток завдань у списку */
+    .card-accent-warning { border-left: 4px solid var(--bs-warning); }
+    .card-accent-secondary { border-left: 4px solid var(--bs-secondary); }
+    .card-accent-primary { border-left: 4px solid var(--bs-primary); }
+    .card-accent-success { border-left: 4px solid var(--bs-success); }
+
+    .text-color-warning { color: var(--bs-warning); }
+    .text-color-secondary { color: var(--bs-secondary); }
+    .text-color-primary { color: var(--bs-primary); }
+    .text-color-success { color: var(--bs-success); }
+
+    .task-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .task-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-light">@ViewData["Title"]</h2>
+        <div class="d-flex align-items-center gap-3">
+
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-muted small me-1">Сортувати:</span>
+                <a asp-action="Index"
+                   asp-route-status="@currentStatus"
+                   asp-route-sortBy="duedate"
+                   asp-route-sortDirection="@ViewData["NextSortDirectionDueDate"]"
+                   class="sort-link @(currentSortBy == "duedate" ? "active" : "")">
+                    За датою
+                    @if (currentSortBy == "duedate")
+                    {
+                        <i class="bi @(currentSortDirection == "asc" ? "bi-sort-up-alt" : "bi-sort-down")"></i>
+                    }
+                </a>
+                <span class="text-muted">|</span>
+                <a asp-action="Index"
+                   asp-route-status="@currentStatus"
+                   asp-route-sortBy="title"
+                   asp-route-sortDirection="@ViewData["NextSortDirectionTitle"]"
+                   class="sort-link @(currentSortBy == "title" ? "active" : "")">
+                    За назвою
+                    @if (currentSortBy == "title")
+                    {
+                        <i class="bi @(currentSortDirection == "asc" ? "bi-sort-up-alt" : "bi-sort-down")"></i>
+                    }
+                </a>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-filter"></i> Фільтр
+                </button>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a class="dropdown-item" asp-action="Index" asp-route-sortBy="@currentSortBy" asp-route-sortDirection="@currentSortDirection">Всі активні</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" asp-action="Index" asp-route-status="@TodoTaskStatus.NotStarted" asp-route-sortBy="@currentSortBy" asp-route-sortDirection="@currentSortDirection">Не розпочаті</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" asp-action="Index" asp-route-status="@TodoTaskStatus.InProgress" asp-route-sortBy="@currentSortBy" asp-route-sortDirection="@currentSortDirection">В процесі</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" asp-action="Index" asp-route-status="@TodoTaskStatus.Completed" asp-route-sortBy="@currentSortBy" asp-route-sortDirection="@currentSortDirection">Завершені</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="row g-4">
+            @foreach (var task in Model)
+            {
+                string statusText;
+                string badgeClass;
+                string cardAccentClass;
+
+                if (task.IsOverdue && task.Status != TodoTaskStatus.Completed)
+                {
+                    statusText = "Протерміновано";
+                    badgeClass = "text-color-warning";
+                    cardAccentClass = "card-accent-warning";
+                }
+                else
+                {
+                    switch (task.Status)
+                    {
+                        case TodoTaskStatus.NotStarted:
+                            statusText = "Не розпочато";
+                            badgeClass = "text-color-secondary";
+                            cardAccentClass = "card-accent-secondary";
+                            break;
+                        case TodoTaskStatus.InProgress:
+                            statusText = "В процесі";
+                            badgeClass = "text-color-primary";
+                            cardAccentClass = "card-accent-primary";
+                            break;
+                        case TodoTaskStatus.Completed:
+                            statusText = "Завершено";
+                            badgeClass = "text-color-success";
+                            cardAccentClass = "card-accent-success";
+                            break;
+                        default:
+                            statusText = "Невідомо";
+                            badgeClass = "text-bg-dark";
+                            cardAccentClass = "";
+                            break;
+                    }
+                }
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm @cardAccentClass task-card">
+                        <div class="card-body d-flex flex-column">
+                            <div class="flex-grow-1">
+                                <h5 class="card-title mb-1">@task.Title</h5>
+                                <span class="@badgeClass fw-semibold">@statusText</span>
+                                <p class="small text-muted mt-2 mb-0">
+                                    <i class="bi bi-calendar-event"></i> До: @task.DueDate.ToString("dd MMM yyyy, HH:mm")
+                                </p>
+                            </div>
+
+                            <div class="d-flex gap-2 justify-content-end mt-4">
+                                <a asp-controller="TodoList"
+                                   asp-action="Details"
+                                   asp-route-todoListId="@task.TodoListId"
+                                   class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-eye"></i> Перегляд
+                                </a>
+
+                                @if (task.Status != TodoTaskStatus.Completed)
+                                {
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-primary dropdown-toggle" type="button" id="dropdownMenuButton-@task.Id" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="bi bi-pencil"></i> Змінити статус
+                                        </button>
+                                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton-@task.Id">
+                                            @if (task.Status != TodoTaskStatus.NotStarted)
+                                            {
+                                                <li>
+                                                    <button class="dropdown-item change-status-btn" data-task-id="@task.Id" data-status="@TodoTaskStatus.NotStarted">Не розпочато</button>
+                                                </li>
+                                            }
+                                            @if (task.Status != TodoTaskStatus.InProgress)
+                                            {
+                                                <li>
+                                                    <button class="dropdown-item change-status-btn" data-task-id="@task.Id" data-status="@TodoTaskStatus.InProgress">В процесі</button>
+                                                </li>
+                                            }
+                                            <li>
+                                                <hr class="dropdown-divider">
+                                            </li>
+                                            <li>
+                                                <button class="dropdown-item change-status-btn" data-task-id="@task.Id" data-status="@TodoTaskStatus.Completed">Завершено</button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success p-2 pe-none"><i class="bi bi-check2-all"></i> Завершено</span>
+                                }
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center p-5 rounded" style="background-color: #f8f9fa;">
+            <h4 class="fw-light">Призначених завдань немає! 🎉</h4>
+            <p class="text-muted">Можна відпочити або перевірити пізніше.</p>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Знаходимо всі кнопки зі статусами
+            const statusMap = {
+                'NotStarted': 0,
+                'InProgress': 1,
+                'Completed': 2
+            };
+
+            document.querySelectorAll('.change-status-btn').forEach(button => {
+                button.addEventListener('click', async (event) => {
+                    const taskId = event.target.dataset.taskId;
+                    const statusString = event.target.dataset.status;
+                    const status = statusMap[statusString];
+                    const statusName = event.target.textContent;
+
+                    if (!confirm(`Ви впевнені, що хочете змінити статус завдання на "${statusName}"?`)) {
+                        return;
+                    }
+
+                    event.target.disabled = true;
+                    event.target.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Зміна...';
+
+                    try {
+                        const response = await fetch(`/assignedtasks/tasks/${taskId}/update-status`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'RequestVerificationToken': getAntiForgeryToken()
+                            },
+                            body: JSON.stringify({ todoTaskStatus: parseInt(status) })
+                        });
+
+                        if (response.ok) {
+                            window.location.reload();
+                        } else {
+                            console.error('Failed to update status:', response.statusText);
+                            alert(`Не вдалося оновити статус. Помилка: ${response.statusText}`);
+                            event.target.disabled = false;
+                            event.target.textContent = statusName;
+                        }
+                    } catch (error) {
+                        console.error('Error updating status:', error);
+                        alert('Сталася помилка під час оновлення статусу.');
+                        event.target.disabled = false;
+                        event.target.textContent = statusName;
+                    }
+                });
+            });
+        });
+
+        function getAntiForgeryToken() {
+            const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+            return tokenInput ? tokenInput.value : '';
+        }
+    </script>
+}

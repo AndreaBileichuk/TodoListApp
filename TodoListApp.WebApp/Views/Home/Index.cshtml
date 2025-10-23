@@ -1,8 +1,58 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+ViewData["Title"] = "Головна";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container my-4">
+    <div class="text-center mb-4">
+        <h1 class="fw-bold text-primary mb-2">TodoListApp</h1>
+        <p class="text-muted">Організуйте свої завдання та підвищуйте продуктивність</p>
+    </div>
+
+    <div class="text-center py-3">
+        <h2 class="fw-semibold text-dark mb-3">Почніть роботу</h2>
+
+        <div class="row justify-content-center g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm p-3 feature-card">
+                    <i class="bi bi-list-check fs-2 text-primary mb-2"></i>
+                    <h5 class="fs-6">Створюйте Списки</h5>
+                    <p class="text-muted small">Організуйте завдання у декілька списків</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm p-3 feature-card">
+                    <i class="bi bi-people fs-2 text-success mb-2"></i>
+                    <h5 class="fs-6">Співпрацюйте</h5>
+                    <p class="text-muted small">Діліться списками та призначайте завдання</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm p-3 feature-card">
+                    <i class="bi bi-tags fs-2 text-warning mb-2"></i>
+                    <h5 class="fs-6">Теги та Пошук</h5>
+                    <p class="text-muted small">Позначайте завдання тегами та швидко знаходьте їх</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <a asp-controller="Auth" asp-action="Register" class="btn btn-primary me-2 px-4">Зареєструватися</a>
+            <a asp-controller="Auth" asp-action="Login" class="btn btn-outline-primary px-4">Увійти</a>
+        </div>
+    </div>
 </div>
+
+<style>
+    .feature-card {
+        transition: transform 0.2s ease;
+        border-radius: 8px;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-3px);
+    }
+
+    .btn {
+        border-radius: 6px;
+    }
+</style>

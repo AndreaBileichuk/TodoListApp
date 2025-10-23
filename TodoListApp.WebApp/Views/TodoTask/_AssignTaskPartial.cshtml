@@ -1,0 +1,75 @@
+﻿@model TodoListApp.WebApp.Models.TodoTask.AssignTaskViewModel
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using TodoListApp.WebApp.Helpers
+
+@{
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+}
+
+<style>
+    .member-avatar-sm {
+        width: 30px;
+        height: 30px;
+        object-fit: cover;
+    }
+</style>
+<div>
+    <h5 class="mb-3">Призначити завдання: "@Model.TaskTitle"</h5>
+
+    @if (Model.Members.Any())
+    {
+        <p class="text-muted small">Оберіть користувача зі списку учасників:</p>
+        <div class="list-group">
+            @foreach (var member in Model.Members)
+            {
+                @if (member.UserId == currentUserId)
+                {
+                    continue;
+                }
+
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        @{
+                            var avatarUrl = member.AvatarUrl ?? DefaultAvatars.DefaultAvatar;
+                        }
+                        <img src="@avatarUrl" class="rounded-circle me-2 member-avatar-sm" alt="Avatar">
+                        <span>@member.UserName</span>
+                    </div>
+
+                    @if (member.UserId == @Model.CurrentAssigneeId)
+                    {
+                        <span class="badge bg-success rounded-pill pe-none">
+                            <i class="bi bi-check-circle-fill me-1"></i> Призначено
+                        </span>
+                    }
+                    else
+                    {
+                        <form asp-controller="TodoTask"
+                              asp-action="AssignTaskToUser"
+                              asp-route-todoListId="@Model.TodoListId"
+                              asp-route-todoTaskId="@Model.TodoTaskId"
+                              id="assignTaskToUserForm"
+                              method="post">
+                            @Html.AntiForgeryToken()
+
+                            <input type="hidden" name="AssigneeId" value="@member.UserId"/>
+
+                            <button type="submit" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-check-lg"></i> Призначити
+                            </button>
+                        </form>
+                    }
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-muted">У цьому списку немає інших учасників, яким можна призначити завдання.</p>
+    }
+
+    <div class="d-flex justify-content-end border-top pt-3 mt-3">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Скасувати</button>
+    </div>
+</div>

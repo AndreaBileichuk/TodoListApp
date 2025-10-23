@@ -8,7 +8,7 @@ public class TodoTask
 
     public string Title { get; set; } = string.Empty;
 
-    public string? Description { get; set; }
+    public string? Description { get; set; } = null;
 
     public TodoTaskStatus Status { get; set; }
 
@@ -16,7 +16,13 @@ public class TodoTask
 
     public DateTime DueDate { get; set; }
 
-    public int AssigneeId { get; set; }
+    public string CreatedById { get; set; } = string.Empty;
+
+    public User? CreatedBy { get; set; }
+
+    public string AssigneeId { get; set; } = string.Empty;
+
+    public User? Assignee { get; set; }
 
     public int TodoListId { get; set; }
 

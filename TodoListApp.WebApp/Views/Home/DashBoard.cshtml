@@ -1,0 +1,127 @@
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model TodoListApp.WebApp.Models.DashBoardModel
+@{
+    ViewData["Title"] = "Панель управління"; // Змінив назву
+}
+
+<div class="container my-4">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark mb-3">TodoListApp</h1>
+        <p class="text-muted">Організуйте свої завдання та підвищуйте продуктивність</p>
+    </div>
+
+    <div class="row g-3 mb-5">
+        <div class="col-md-4">
+            <div class="card border-light shadow-sm">
+                <div class="card-body text-center py-4">
+                    <h6 class="card-title text-muted mb-2">Мої списки</h6>
+                    <p class="h3 fw-bold mb-3">@Model.MyListsCount</p>
+                    <a asp-controller="TodoList" asp-action="Index" class="btn btn-outline-dark btn-sm">
+                        Переглянути всі
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-light shadow-sm">
+                <div class="card-body text-center py-4">
+                    <h6 class="card-title text-muted mb-2">Призначено мені</h6>
+                    <p class="h3 fw-bold mb-3">@Model.AssignedToMeCount</p>
+                    <a asp-controller="AssignedTasks" asp-action="Index" class="btn btn-outline-dark btn-sm">
+                        Переглянути завдання
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-light shadow-sm">
+                <div class="card-body text-center py-4">
+                    <h6 class="card-title text-muted mb-2">Протерміновані завдання</h6>
+                    <p class="h3 fw-bold mb-3">@Model.OverdueTasksCount</p>
+                    <a asp-controller="AssignedTasks" asp-action="Index" class="btn btn-dark btn-sm">
+                        Переглянути зараз
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-light shadow-sm">
+        <div class="card-header bg-light py-3">
+            <h6 class="mb-0 fw-semibold">Останні списки справ</h6>
+        </div>
+        <div class="card-body p-4">
+            @if (Model.TodoLists.Any())
+            {
+                <div class="tasks-list">
+                    @foreach (var todoList in Model.TodoLists)
+                    {
+                        <div class="task-item d-flex align-items-center justify-content-between p-3 mb-2 rounded">
+                            <div class="d-flex align-items-center">
+                                <div class="status-indicator me-3 bg-primary"></div>
+                                <div>
+                                    <h6 class="mb-1 fw-semibold">@todoList.Title</h6>
+                                    @if (!string.IsNullOrEmpty(todoList.Description))
+                                    {
+                                        <p class="text-muted mb-0 small">@todoList.Description</p>
+                                    }
+                                    else
+                                    {
+                                        <p class="text-muted mb-0 small">Без опису</p>
+                                    }
+                                </div>
+                            </div>
+                            <a asp-controller="TodoList" asp-action="Details" asp-route-todoListId="@todoList.Id"
+                               class="btn btn-outline-dark btn-sm">
+                                Переглянути
+                            </a>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0 text-center py-3">Ваші нещодавно створені списки справ з'являться тут.</p>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 8px;
+        transition: transform 0.2s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+    }
+
+    .btn {
+        border-radius: 6px;
+    }
+
+    .task-item {
+        border: 1px solid #f1f3f4;
+        transition: all 0.2s ease;
+    }
+
+    .task-item:hover {
+        background-color: #f8f9fa !important;
+        border-color: #dee2e6;
+    }
+
+    .status-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: #0d6efd;
+    }
+
+    .badge {
+        font-size: 0.7em;
+        padding: 0.3em 0.6em;
+    }
+</style>
