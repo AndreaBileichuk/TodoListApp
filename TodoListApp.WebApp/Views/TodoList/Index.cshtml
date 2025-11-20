@@ -133,7 +133,7 @@ Layout = "_Layout";
 
     .empty-state {
         background: white;
-        border: 2px dashed #e8f5e8;
+        border: 2px dashed #d1f0d9;
         border-radius: 20px;
         padding: 80px 40px;
         text-align: center;
@@ -143,15 +143,12 @@ Layout = "_Layout";
     .empty-state::before {
         content: '';
         position: absolute;
-        top: -2px;
-        left: -2px;
-        right: -2px;
-        bottom: -2px;
-        border: 2px solid transparent;
-        background: linear-gradient(135deg, #28a745, #20c997) border-box;
-        -webkit-mask-composite: xor;
-        mask-composite: exclude;
-        border-radius: 20px;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #28a745, #20c997);
+        border-radius: 20px 20px 0 0;
     }
 
     .empty-state-icon {
